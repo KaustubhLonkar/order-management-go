@@ -1,0 +1,13 @@
+#!/bin/bash -e
+# A simple wrapper script to fetch and build a static binary in Go
+
+if [ -z "$1" ]; then
+	echo "Expected a github package to build"
+	exit 1
+fi
+
+echo -e "** Fetching $1 and its dependencies.\n\n"
+go get -d -v $1
+cd /go/bin || exit 1
+echo -e "\n\n** Compiling $1 as a static binary in /go/bin\n\n"
+go build -v -tags netgo -ldflags '-w' $1

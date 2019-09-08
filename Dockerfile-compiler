@@ -1,0 +1,17 @@
+FROM golang:latest
+
+# Set environment variables for building within GE
+ENV GOBIN $GOPATH/bin
+ENV http_proxy http://http-proxy.appl.ge.com:8080
+ENV https_proxy http://http-proxy.appl.ge.com:8080
+ENV no_proxy ge.com
+ENV GO15VENDOREXPERIMENT 1
+
+VOLUME /go/bin
+COPY compiler /
+
+# Now we simply build the package from GitHub (this will download dependencies)
+ENTRYPOINT ["/compiler"]
+
+# Make sure compiler is executable
+RUN chmod +x /compiler
