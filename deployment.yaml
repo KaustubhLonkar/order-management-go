@@ -1,0 +1,23 @@
+apiVersion: ordermanagement/v1
+kind: Deployment
+metadata:
+  name: ordermanagement
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: *********
+  template:
+    metadata:
+      labels:
+        app: ordermanagement
+    spec:
+      containers:
+      - name: ordermanagement
+        image: ************
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 3000

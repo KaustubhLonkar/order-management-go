@@ -1,15 +1,28 @@
-FROM busybox:latest
+FROM golang:latest
 
-ENV GIN_MODE release
-ENV NOAUTH false
-ENV AWS_REGION us-east-1
+# Copy the local package files to the container’s workspace.
 
-WORKDIR /
-# assumes that the availability-service-go binary was compiled via
-# the Dockerfile-compile container with a linked volume of $builddir/bin
-COPY bin/availability-service-go /
-COPY *.json /
+WORKDIR /go/src/github.com/KaustubhLonkar
+RUN cd /go/src/github.com/KaustubhLonkar \
+    && git https://github.com/KaustubhLonkar/order-management-go.git
 
-CMD ["/availability-service-go"]
-EXPOSE 8888
-USER nobody
+RUN cd /go/src/github.com/KaustubhLonkar/order-management-go
+# Install our dependencies
+RUN go get github.com/go-sql-driver/mysql  
+RUN go get github.com/gin-gonic/gin
+RUN go get github.com/segmentio/kafka-go
+RUN go get github.com/segmentio/kafka-go/snappy
+RUN go get github.com/jinzhu/gorm/dialects/mysql
+RUN go get github.com/jinzhu/gorm
+RUN go get github.com/rs/zerolog/log
+RUN go get github.com/gin-gonic/contrib/static
+RUN go get github.com/zsais/go-gin-prometheus
+
+# Install api binary globally within container 
+RUN go install github.com/KaustubhLonkar/order-management-go
+
+# Set binary as entrypoint
+ENTRYPOINT /go/bin/order-management-go
+
+# Expose default port (8888)
+EXPOSE 8888 

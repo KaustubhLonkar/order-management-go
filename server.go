@@ -3,40 +3,46 @@ package main
 import (
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
-	"os"
 	"time"
 
-	product "github.appl.ge.com/geappliancesales/product-service-go/product"
-	_ "github.com/gin-gonic/contrib/static"
+	order "github.com/KaustubhLonkar/order-management-go/order"
+	products "github.com/KaustubhLonkar/order-management-go/products"
+	shipping "github.com/KaustubhLonkar/order-management-go/shipping"
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	ginprometheus "github.com/zsais/go-gin-prometheus"
 )
 
-var (
-	debug  = os.Getenv("DEBUG")
-	rpcEnv = os.Getenv("RPCENV")
+// used to match which service is being called
+const (
+	ADDPRODUCT  = "/addProduct"
+	GETPRODUCTS = "/getProducts"
+	PLACEORDER  = "/placeOrder"
+	SHIPPING    = "/getShipping"
 )
 
 func main() {
-
+	rand.Seed(time.Now().UTC().UnixNano())
 	router := initRouter()
 	router.Run(":8888")
 }
 
 func initRouter() *gin.Engine {
+	f
 
-	if rpcEnv == "prod" || rpcEnv == "prd" {
-		gin.SetMode(gin.ReleaseMode)
-	}
 	r := gin.New()
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use(r)
+	r.Use(static.Serve("/", static.LocalFile("./view", true)))
 	r.Use(gin.Recovery(), plainLoggerWithWriter(gin.DefaultWriter))
+
 	r.GET("/status", statusCheck)
-
-	v1 := r.Group("/v1", v1Handler)
-
-	v1.POST("addProduct", func(c *gin.Context) {
-		product.AddProduct(c)
-	})
+	r.POST("/addProduct", requestRouter)
+	r.GET("/getProducts", requestRouter)
+	r.POST("/placeOrder", requestRouter)
 
 	return r
 }
@@ -75,6 +81,7 @@ func plainLoggerWithWriter(out io.Writer) gin.HandlerFunc {
 	}
 }
 
+// statusCheck returns a 200/OK when called if we can contact the be env
 func statusCheck(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "OK"})
 }
@@ -83,7 +90,18 @@ func exception(c *gin.Context) {
 	c.JSON(500, gin.H{"success": false, "error": "Unable to process order"})
 }
 
-func v1Handler(c *gin.Context) {
-	c.Set("version", 1)
-	c.Next()
+func requestRouter(c *gin.Context) {
+
+	path := c.Request.URL.Path
+	fmt.Println("The obtained path is:- ", path)
+	switch path {
+	case ADDPRODUCT:
+		products.AddProduct(c)
+	case GETPRODUCTS:
+		products.GetProducts(c)
+	case PLACEORDER:
+		order.PlaceOrder(c)
+	case SHIPPING:
+		shipping.GetShippingDetails(c)
+	}
 }
