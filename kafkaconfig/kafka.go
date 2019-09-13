@@ -59,7 +59,7 @@ func Configure(KafkaBrokerUrls []string, clientId string, topic string) (w *kafk
 
 	dialer := &kafka.Dialer{
 		Timeout:  10 * time.Second,
-		ClientID: clientId,s
+		ClientID: clientId,
 	}
 	config := kafka.WriterConfig{
 		Brokers:          KafkaBrokerUrls,
