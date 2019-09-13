@@ -31,7 +31,6 @@ func main() {
 }
 
 func initRouter() *gin.Engine {
-	f
 
 	r := gin.New()
 	p := ginprometheus.NewPrometheus("gin")
