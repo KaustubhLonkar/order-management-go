@@ -1,0 +1,45 @@
+version: '3'
+services:
+  zookeeper:
+    image: debezium/zookeeper:0.8
+    ports:
+     - 2181:2181
+     - 2888:2888
+     - 3888:3888
+  kafka:
+    image: debezium/kafka:0.8
+    ports:
+     - 9092:9092
+    links:
+     - zookeeper
+    environment:
+     - ZOOKEEPER_CONNECT=zookeeper:2181
+  web:
+    restart: always
+    image: order-management-go
+    ports:
+      - 8888:8888
+    links:
+      - mysql
+      - kafka
+  mysql:
+    image: mysql:5.7
+    ports:
+     - 3306:3306
+    environment:
+      - "DB_PORT=3306"
+      - "DB_HOST=mysql"
+      - "DB_NAME=Ordermanagement"
+      - "DB_PASS=12345"
+  connect:
+    image: debezium/connect:0.8
+    ports:
+     - 8083:8083
+    links:
+     - kafka
+     - order-management-go
+    environment:
+     - BOOTSTRAP_SERVERS=kafka:9092
+     - GROUP_ID=1
+     - CONFIG_STORAGE_TOPIC=my_connect_configs
+     - OFFSET_STORAGE_TOPIC=my_connect_offsets
