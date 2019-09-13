@@ -24,6 +24,10 @@ type TransformedProduct struct {
 	ProductPrice    int    `json:"product_price"`
 }
 
+func addProductDB(prod *product) {
+	model.Db.AutoMigrate(&prod)
+}
+
 // AddProduct func
 func AddProduct(c *gin.Context) {
 
@@ -35,6 +39,7 @@ func AddProduct(c *gin.Context) {
 		ProductPrice:    price,
 		ProductQuantity: quantity,
 	}
+	addProductDB(&prod)
 	model.Db.Save(&prod)
 	c.JSON(http.StatusCreated, gin.H{
 		"status":  http.StatusCreated,

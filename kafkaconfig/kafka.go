@@ -10,12 +10,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	//kafka "github.com/yusufsyaifudin/go-kafka-example/dep/kafka"
+
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/snappy"
 )
 
 var (
-	listenAddrApi string
+	listenAddrApi  string
 	KafkaBrokerUrl string
 	kafkaVerbose   bool
 	KafkaClientId  string
@@ -23,12 +25,12 @@ var (
 	Messages       []string
 )
 
-func init(){
+func init() {
 	//flag.StringVar(&listenAddrApi, "listen-address", "0.0.0.0:9000", "Listen address for api")
-	flag.StringVar(&KafkaBrokerUrl, "kafka-brokers", "localhost:9092,localhost:9093,localhost:9094,localhost:9095", "Kafka brokers in comma separated value")
+	flag.StringVar(&KafkaBrokerUrl, "kafka-brokers", "localhost:9092", "Kafka brokers in comma separated value")
 	flag.BoolVar(&kafkaVerbose, "kafka-verbose", true, "Kafka verbose logging")
 	flag.StringVar(&KafkaClientId, "kafka-client-id", "my-kafka-client", "Kafka client id to connect")
-	flag.StringVar(&KafkaTopic, "kafka-topic", "foo", "Kafka topic to push")
+	flag.StringVar(&KafkaTopic, "kafka-topic", "sql-insert", "Kafka topic to push") //sql-insert is a topic name
 	flag.Parse()
 
 }
@@ -50,16 +52,16 @@ var writer *kafka.Writer
 // Configure func
 func Configure(KafkaBrokerUrls []string, clientId string, topic string) (w *kafka.Writer, err error) {
 	fmt.Println("Started kafka configuration")
-	flag.StringVar(&listenAddrApi, "listen-address", "0.0.0.0:9000", "Listen address for api")
-	flag.StringVar(&KafkaBrokerUrl, "kafka-brokers", "localhost:9092,localhost:9093,localhost:9094,localhost:9095", "Kafka brokers in comma separated value")
-	flag.BoolVar(&kafkaVerbose, "kafka-verbose", true, "Kafka verbose logging")
-	flag.StringVar(&KafkaClientId, "kafka-client-id", "my-kafka-client", "Kafka client id to connect")
-	flag.StringVar(&KafkaTopic, "kafka-topic", "foo", "Kafka topic to push")
-	flag.Parse()
+	// flag.StringVar(&listenAddrApi, "listen-address", "0.0.0.0:9000", "Listen address for api")
+	// flag.StringVar(&KafkaBrokerUrl, "kafka-brokers", "localhost:9092,localhost:9093,localhost:9094,localhost:9095", "Kafka brokers in comma separated value")
+	// flag.BoolVar(&kafkaVerbose, "kafka-verbose", true, "Kafka verbose logging")
+	// flag.StringVar(&KafkaClientId, "kafka-client-id", "my-kafka-client", "Kafka client id to connect")
+	// flag.StringVar(&KafkaTopic, "kafka-topic", "foo", "Kafka topic to push")
+	// flag.Parse()
 
 	dialer := &kafka.Dialer{
 		Timeout:  10 * time.Second,
-		ClientID: clientId,s
+		ClientID: clientId,
 	}
 	config := kafka.WriterConfig{
 		Brokers:          KafkaBrokerUrls,

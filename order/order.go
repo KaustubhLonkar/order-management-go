@@ -16,7 +16,7 @@ import (
 
 type order struct {
 	gorm.Model
-	Product     products.TransformedProduct `gorm:"foreignkey:productRefer`
+	Product     products.TransformedProduct `gorm:"foreignkey:json:"id"`
 	OrderAmount int                         `json:"order_amount"`
 }
 
@@ -36,6 +36,10 @@ var custInfo = customer{
 	PinCode: "560103",
 }
 
+func addOrderDB(ord *order) {
+	model.Db.AutoMigrate(&ord)
+}
+
 // PlaceOrder func
 func PlaceOrder(c *gin.Context) {
 	pname := c.PostForm("pname")
@@ -49,12 +53,15 @@ func PlaceOrder(c *gin.Context) {
 
 			Product: products.TransformedProduct{
 				ProductID:       prod.ID,
-				ProductName:     pname,
+				ProductName:     prod.ProductName,
 				ProductQuantity: qty,
 				ProductPrice:    prod.ProductPrice,
 			},
 			OrderAmount: amt,
 		}
+		ord.Product.ProductID = prod.ID
+		//fmt.Println(ord)
+		addOrderDB(&ord)
 		model.Db.Save(&ord)
 		kafkaProducer, err := kafkaconfig.Configure(strings.Split(kafkaconfig.KafkaBrokerUrl, ","), kafkaconfig.KafkaClientId, kafkaconfig.KafkaTopic)
 		if err != nil {
@@ -79,7 +86,7 @@ func PlaceOrder(c *gin.Context) {
 			"message": "placed order is successfull...!",
 			"data":    ord,
 		})
-
+		return
 	} else {
 		c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "No Product found !!"})
 		return
